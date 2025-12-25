@@ -21,23 +21,20 @@ export default async function handler(
       jobDescription,
       resumeText
     );
-
     return res.status(200).json(result);
-  } catch (error: any) {
-    console.error("Error generating cover letter:", error);
+  } catch (err: any) {
+    console.error(err);
 
     if (
-      error?.status === 429 ||
-      error?.code === 429 ||
-      error?.message?.includes("RESOURCE_EXHAUSTED")
+      err?.status === 429 ||
+      err?.code === 429 ||
+      err?.message?.includes("RESOURCE_EXHAUSTED")
     ) {
       return res
         .status(429)
         .json({ error: "Rate limit exceeded. Please try again later." });
     }
 
-    return res
-      .status(500)
-      .json({ error: "Failed to generate cover letter" });
+    return res.status(500).json({ error: "Failed to generate cover letter" });
   }
 }
