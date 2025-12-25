@@ -4,7 +4,7 @@ export async function generateCoverLetter(jobTitle: string, jobDescription: stri
   const ai = new GoogleGenAI({});
 
   const result = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemma-3-12b-it",
     contents: `You are a ${jobTitle} writing a tailored cover letter.
       Your task is to:
       1. Extract relevant technical signals from the resume text provided.
@@ -14,7 +14,7 @@ export async function generateCoverLetter(jobTitle: string, jobDescription: stri
       CRITICAL OUTPUT REQUIREMENTS:
       - Output MUST be plain text only.
       - Do NOT use Markdown.
-      - Do NOT use asterisks, bolding, italics, bullet points, or headings.
+      - Do NOT use asterisks, bolding, italics, bullet points, \n, or headings.
       - Do NOT apply special typography, spacing, or stylistic formatting.
       - Write as a normal professional cover letter suitable for PDF or email.
 
@@ -30,6 +30,7 @@ export async function generateCoverLetter(jobTitle: string, jobDescription: stri
 
       3. Body paragraphs:
         - 2–4 paragraphs forming the main cover letter body
+        - The cover letter MUST end with a brief, professional call-to-action inviting the hiring manager to continue the conversation or schedule an interview.
 
       4. Closing line:
         - "Sincerely," or "Best regards,"

@@ -12,7 +12,6 @@ export default async function handler(
   const { jobTitle, jobDescription, resumeText } = req.body;
 
   try {
-
     if (!jobTitle || !jobDescription || !resumeText) {
       throw new Error("Missing required fields");
     }
@@ -23,10 +22,8 @@ export default async function handler(
       resumeText
     );
 
-    return res.status(200).json(result);
+    return res.status(200).send(result);
   } catch (err: any) {
-    console.error(err);
-
     if (
       err?.status === 429 ||
       err?.code === 429 ||

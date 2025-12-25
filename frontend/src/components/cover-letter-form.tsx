@@ -14,7 +14,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import { toast } from "sonner"
 import { classifyGeminiError } from "@/lib/utils";
 
-import logo from "../assets/download.svg";
+import logo from "../assets/logo.svg";
 
 // Initialize PDF.js worker
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -77,7 +77,6 @@ export default function CoverLetterForm() {
             }
             setResumeText(text);
         } catch (error) {
-            console.error("Error parsing resume:", error);
             toast.error("Failed to read resume file. Please try again.");
         } finally {
             setIsParsing(false);
@@ -112,9 +111,8 @@ export default function CoverLetterForm() {
             setStep(null);
             toast.success("Cover letter generated successfully!")
         },
-        onError: (error) => {
+        onError: (_error) => {
             setStep(null);
-            console.error("Error generating cover letter:", error);
             toast.error("Failed to generate cover letter. Please try again.")
         }
     });
@@ -167,8 +165,8 @@ export default function CoverLetterForm() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen p-4 h-full bg-black">
-            <Card className="w-full max-w-2xl shadow-lg bg-gray-100">
+        <div className="flex justify-center min-h-screen px-4 py-12 bg-black">
+            <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-[880px] bg-white rounded-xl shadow-lg p-6 sm:p-8">
                 <CardHeader>
                     <ItemMedia variant="image" className="justify-self-center size-36 [&_img]:object-contain">
                         <img
@@ -194,7 +192,7 @@ export default function CoverLetterForm() {
                                 accept=".pdf,.docx"
                                 onChange={handleFileUpload}
                                 className="cursor-pointer file:cursor-pointer bg-black text-gray-400 file:text-white"
-                                disabled={isParsing}
+                                disabled={isParsing || generateMutation.isPending}
                             />
                             {isParsing && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                         </div>
@@ -217,6 +215,7 @@ export default function CoverLetterForm() {
                             placeholder="e.g. Senior Frontend Engineer"
                             value={jobTitle}
                             onChange={(e) => setJobTitle(e.target.value)}
+                            disabled={isParsing || generateMutation.isPending}
                         />
                     </div>
 
@@ -228,6 +227,7 @@ export default function CoverLetterForm() {
                             className="min-h-[120px]"
                             value={jobDescription}
                             onChange={(e) => setJobDescription(e.target.value)}
+                            disabled={isParsing || generateMutation.isPending}
                         />
                     </div>
 
@@ -235,7 +235,7 @@ export default function CoverLetterForm() {
                         <Button
                             className="w-50 cursor-pointer min-w-fit h-10"
                             onClick={handleGenerate}
-                            disabled={!jobTitle || !jobDescription || generateMutation.isPending || isParsing}
+                            disabled={!jobTitle || !jobDescription || generateMutation.isPending || isParsing || fileName.length === 0}
                         >
                             <Sparkles className="mr-2 h-4 w-4" />
                             <span className={step ? "animate-pulse" : ""}>{step ?? "Generate Cover Letter"}</span>
