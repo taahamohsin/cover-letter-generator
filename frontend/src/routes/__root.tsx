@@ -3,9 +3,11 @@ import Navbar from "@/components/ui/navbar";
 
 export const Route = createRootRoute({
     component: () => (
-        <>
+        <div className="h-screen w-screen overflow-hidden flex flex-col">
             <Navbar />
-            <Outlet />
-        </>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                <Outlet />
+            </div>
+        </div>
     ),
 });
