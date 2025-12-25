@@ -11,16 +11,18 @@ export default async function handler(
 
   const { jobTitle, jobDescription, resumeText } = req.body;
 
-  if (!jobTitle || !jobDescription || !resumeText) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
   try {
+
+    if (!jobTitle || !jobDescription || !resumeText) {
+      throw new Error("Missing required fields");
+    }
+
     const result = await generateCoverLetter(
       jobTitle,
       jobDescription,
       resumeText
     );
+
     return res.status(200).json(result);
   } catch (err: any) {
     console.error(err);
