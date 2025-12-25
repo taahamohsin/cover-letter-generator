@@ -1,4 +1,4 @@
-import CoverLetterForm from "./components/Form";
+import CoverLetterForm from "./components/cover-letter-form";
 
 function App() {
   return (
