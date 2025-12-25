@@ -97,11 +97,10 @@ export default function CoverLetterForm() {
             if (!response.ok) {
                 const errorCategory = classifyGeminiError(response.body);
                 if (errorCategory === "rate_limit") {
-                    toast.error("Rate limit exceeded. Please try again later.");
+                    throw new Error("Rate limit exceeded. Please try again later.");
                 } else {
-                    toast.error("Failed to generate cover letter. Please try again.");
+                    throw new Error("Failed to generate cover letter. Please try again.");
                 }
-                return;
             }
 
             return response.text();
@@ -111,9 +110,9 @@ export default function CoverLetterForm() {
             setStep(null);
             toast.success("Cover letter generated successfully!")
         },
-        onError: (_error) => {
+        onError: (error: Error) => {
             setStep(null);
-            toast.error("Failed to generate cover letter. Please try again.")
+            toast.error(error.message || "Failed to generate cover letter. Please try again.")
         }
     });
 
