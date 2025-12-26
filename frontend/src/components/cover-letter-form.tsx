@@ -5,18 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { jsPDF } from "jspdf";
-import { Copy, FileDown, Sparkles, Check, Loader2, Save, FileText } from "lucide-react";
+import { Sparkles, Check, Loader2, Save } from "lucide-react";
 import mammoth from "mammoth";
 import * as pdfjsLib from "pdfjs-dist";
-import { toast } from "sonner"
-import { saveAs } from "file-saver";
+import { toast } from "sonner";
 
 import { classifyGeminiError } from "@/lib/utils";
 import { useCreateCoverLetter } from "@/lib/useCoverLetters";
 import { useAuth } from "@/lib/useAuth";
 import ContentCard from "@/components/ui/content-card";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import CoverLetterActions from "@/components/ui/cover-letter-actions";
 import {
     Dialog,
     DialogContent,
@@ -47,7 +45,6 @@ export default function CoverLetterForm() {
     const [jobTitle, setJobTitle] = useState<string>("");
     const [jobDescription, setJobDescription] = useState<string>("");
     const [coverLetter, setCoverLetter] = useState<string>("");
-    const [copied, setCopied] = useState<boolean>(false);
     const [step, setStep] = useState<string | null>(null);
 
     const [resumeText, setResumeText] = useState<string>("");
@@ -163,60 +160,6 @@ export default function CoverLetterForm() {
         if (step) setStep(null);
     };
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(coverLetter);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    const handleExportPDF = () => {
-        if (!coverLetter) return;
-
-        const doc = new jsPDF();
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-
-        // Split text to fit page
-        const splitText = doc.splitTextToSize(coverLetter, 180);
-
-        doc.text(splitText, 15, 20);
-
-        doc.save(`${jobTitle.replace(/\s+/g, "_")}_Cover_Letter.pdf`);
-    };
-
-    const handleExportDocx = async () => {
-        if (!coverLetter) return;
-
-        // Split cover letter into paragraphs
-        const paragraphs = coverLetter.split('\n').filter(line => line.trim() !== '');
-
-        // Create document with paragraphs
-        const doc = new Document({
-            sections: [{
-                properties: {},
-                children: paragraphs.map(paragraphText =>
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: paragraphText,
-                                font: "Calibri",
-                                size: 24, // 12pt in half-points
-                            }),
-                        ],
-                        spacing: {
-                            after: 200, // spacing after paragraph
-                        },
-                    })
-                ),
-            }],
-        });
-
-        // Generate and download the document
-        const blob = await Packer.toBlob(doc);
-        saveAs(blob, `${jobTitle.replace(/\s+/g, "_")}_Cover_Letter.docx`);
-    };
-
     const handleSaveClick = () => {
         if (!user) {
             toast.error("Please sign in to save cover letters");
@@ -318,7 +261,7 @@ export default function CoverLetterForm() {
                     <Button
                         variant="outline"
                         onClick={handleReset}
-                        disabled={!jobTitle && !jobDescription && !resumeText && !coverLetter}
+                        disabled={(!jobTitle && !jobDescription && !resumeText && !coverLetter) || generateMutation.isPending}
                         className="cursor-pointer h-10 border-slate-600 text-slate-800 font-medium hover:bg-slate-100 disabled:opacity-50"
                     >
                         Reset
@@ -330,42 +273,11 @@ export default function CoverLetterForm() {
                         <div className="flex flex-col gap-3">
                             <Label htmlFor="output" className="text-base font-semibold">Generated Cover Letter</Label>
                             <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleCopy}
-                                    className="cursor-pointer"
-                                >
-                                    {copied ? (
-                                        <>
-                                            <Check className="h-4 w-4 mr-2" />
-                                            <span>Copied</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="h-4 w-4 mr-2" />
-                                            <span>Copy</span>
-                                        </>
-                                    )}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleExportPDF}
-                                    className="cursor-pointer"
-                                >
-                                    <FileDown className="h-4 w-4 mr-2" />
-                                    <span>PDF</span>
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleExportDocx}
-                                    className="cursor-pointer"
-                                >
-                                    <FileText className="h-4 w-4 mr-2" />
-                                    <span>DOCX</span>
-                                </Button>
+                                <CoverLetterActions
+                                    content={coverLetter}
+                                    filename={jobTitle.replace(/\s+/g, "_")}
+                                    className="contents"
+                                />
                                 <TooltipProvider delayDuration={100}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>

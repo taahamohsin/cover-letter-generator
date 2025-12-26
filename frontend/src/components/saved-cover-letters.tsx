@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/useAuth";
 import { Link } from "@tanstack/react-router";
 import type { CoverLetter } from "@/lib/api";
 import ContentCard from "@/components/ui/content-card";
+import CoverLetterActions from "@/components/ui/cover-letter-actions";
 import {
     Dialog,
     DialogContent,
@@ -40,10 +41,11 @@ export default function SavedCoverLetters() {
     const [showFullDescription, setShowFullDescription] = useState(false);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-    if (authLoading || (isLoading && !data)) {
+    if (authLoading || (isLoading && !data) || deleteMutation.isPending) {
         return (
             <div className="flex justify-center items-center min-h-full bg-black">
-                <Loader2 className="h-8 w-8 animate-spin text-white" />
+                <Loader2 className="h-8 w-8 animate-spin text-white mr-2" />
+                <p className="text-white">{deleteMutation.isPending ? "Deleting..." : "Loading..."}</p>
             </div>
         );
     }
@@ -184,9 +186,21 @@ export default function SavedCoverLetters() {
                                 <CardHeader>
                                     <div className="flex justify-between items-start gap-4">
                                         <div className="flex-1 min-w-0">
-                                            <CardTitle className="text-lg sm:text-xl truncate">
-                                                {letter.template_name}
-                                            </CardTitle>
+                                            <div className="flex justify-between items-center gap-2">
+                                                <CardTitle className="text-lg sm:text-xl truncate">
+                                                    {letter.template_name}
+                                                </CardTitle>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteClick(e, letter.id);
+                                                    }}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                             <p className="text-sm text-zinc-600 mt-1">
                                                 Created: {new Date(letter.created_at).toLocaleDateString()}
                                             </p>
@@ -194,15 +208,6 @@ export default function SavedCoverLetters() {
                                                 {letter.template_description}
                                             </p>
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={(e) => handleDeleteClick(e, letter.id)}
-                                            disabled={deleteMutation.isPending}
-                                            className="shrink-0 h-8 w-8 text-zinc-500 hover:text-red-600 hover:bg-red-50"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
                                     </div>
                                 </CardHeader>
                             </Card>
@@ -226,14 +231,25 @@ export default function SavedCoverLetters() {
                                         </p>
                                     </div>
                                     {editingId !== selectedLetter.id && (
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => handleEdit(selectedLetter)}
-                                            className="shrink-0 h-8 w-8"
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
+                                        <>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => handleEdit(selectedLetter)}
+                                                className="shrink-0 h-8 w-8"
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={(e) => handleDeleteClick(e, selectedLetter.id)}
+                                                disabled={deleteMutation.isPending}
+                                                className="shrink-0 h-8 w-8 text-zinc-500 hover:text-red-600 hover:bg-red-50"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </>
                                     )}
                                 </div>
                             </DialogHeader>
@@ -340,7 +356,13 @@ export default function SavedCoverLetters() {
                                         </div>
 
                                         <div>
-                                            <Label className="text-sm font-semibold">Cover Letter</Label>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <Label className="text-sm font-semibold">Cover Letter</Label>
+                                                <CoverLetterActions
+                                                    content={selectedLetter.cover_letter_content}
+                                                    filename={selectedLetter.template_name.replace(/\s+/g, "_")}
+                                                />
+                                            </div>
                                             <div className="mt-2 border border-zinc-200 rounded-md p-4 bg-zinc-50">
                                                 <p className="text-sm text-zinc-800 whitespace-pre-wrap font-mono leading-relaxed">
                                                     {selectedLetter.cover_letter_content}
