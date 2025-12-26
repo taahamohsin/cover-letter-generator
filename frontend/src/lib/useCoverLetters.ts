@@ -11,7 +11,7 @@ import {
 export function useCoverLetters(limit = 10, offset = 0) {
   return useQuery({
     queryKey: ["cover-letters", limit, offset],
-    queryFn: () => listCoverLetters(limit, offset)
+    queryFn: () => listCoverLetters(limit, offset),
   });
 }
 
@@ -20,8 +20,8 @@ export function useCreateCoverLetter() {
 
   return useMutation({
     mutationFn: createCoverLetter,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cover-letters"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["cover-letters"] });
       toast.success("Cover letter saved successfully!");
     },
     onError: (error: Error) => {
@@ -43,8 +43,8 @@ export function useUpdateCoverLetter() {
         Pick<CoverLetter, "template_name" | "template_description" | "cover_letter_content">
       >;
     }) => updateCoverLetter(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cover-letters"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["cover-letters"] });
       toast.success("Cover letter updated!");
     },
     onError: (error: Error) => {
@@ -58,8 +58,8 @@ export function useDeleteCoverLetter() {
 
   return useMutation({
     mutationFn: (id: string) => deleteCoverLetter(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cover-letters"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["cover-letters"] });
       toast.success("Cover letter deleted!");
     },
     onError: (error: Error) => {

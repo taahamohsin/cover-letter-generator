@@ -9,7 +9,6 @@ An AI-powered cover letter generator built for software engineers. Upload your r
 - **Multiple Export Formats**: Download your cover letter as PDF or DOCX
 - **Template Management**: Save, edit, and manage your cover letter templates
 - **GitHub Authentication**: Secure sign-in with GitHub OAuth
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
 ## Tech Stack
 
@@ -170,9 +169,4 @@ This project is open source and available under the MIT License.
 - Support for other models/providers
 - Support for storing and choosing from uploaded resumes
 
-## Acknowledgments
-
-- Built with [shadcn/ui](https://ui.shadcn.com/)
-- Powered by [Google Gemini AI](https://ai.google.dev/)
-- Database and auth by [Supabase](https://supabase.com/)
 
