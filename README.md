@@ -4,7 +4,7 @@ An AI-powered cover letter generator built for software engineers. Upload your r
 
 ## Features
 
-- **AI-Powered Generation**: Uses Google's Gemini AI to create tailored cover letters based on your resume and job requirements
+- **AI-Powered Generation**: Uses Google's Gemini AI (gemma-3-12b-it) to create tailored cover letters based on your resume and job requirements
 - **Resume Parsing**: Automatically extracts text from PDF and DOCX resume files
 - **Multiple Export Formats**: Download your cover letter as PDF or DOCX
 - **Template Management**: Save, edit, and manage your cover letter templates
