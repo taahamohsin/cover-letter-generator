@@ -7,6 +7,22 @@ export interface CoverLetter {
   template_description: string;
   cover_letter_content: string;
   resume_text?: string;
+  resume_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Resume {
+  id: string;
+  user_id: string;
+  filename: string;
+  original_filename: string;
+  file_size: number;
+  file_type: string;
+  storage_path: string;
+  resume_text: string;
+  is_default: boolean;
+  download_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -43,6 +59,7 @@ export async function createCoverLetter(payload: {
   template_description: string;
   cover_letter_content: string;
   resume_text?: string;
+  resume_id?: string;
 }): Promise<CoverLetter> {
   const token = await getAuthToken();
   if (!token) throw new Error("Not authenticated");
@@ -107,4 +124,148 @@ export async function deleteCoverLetter(id: string): Promise<void> {
     const error = await response.json().catch(() => ({}));
     throw new Error(error.error || "Failed to delete cover letter");
   }
+}
+
+export async function listResumes(
+  limit = 10,
+  offset = 0
+): Promise<{ data: Resume[]; count: number }> {
+  const token = await getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch(
+    `/api/resumes?limit=${limit}&offset=${offset}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to fetch resumes");
+  }
+
+  return response.json();
+}
+
+export async function getResume(id: string): Promise<Resume> {
+  const token = await getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch(`/api/resumes?id=${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to fetch resume");
+  }
+
+  return response.json();
+}
+
+async function getUploadUrl(fileName: string): Promise<{ path: string; signedUrl: string; token: string }> {
+  const token = await getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch(`/api/resumes/upload-url?fileName=${fileName}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to get upload url");
+  }
+
+  return response.json();
+}
+
+export async function uploadResume(
+  file: File, is_default = false
+): Promise<Resume> {
+  const token = await getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  try {
+    const { path, token: uploadToken } = await getUploadUrl(file.name);
+
+    const { data, error } = await supabase
+      .storage
+      .from('resumes')
+      .uploadToSignedUrl(path, uploadToken, file);
+
+    const { fullPath } = data || {};
+
+    if (error) {
+      throw new Error(error.message || "Failed to upload resume");
+    }
+    const response = await fetch("/api/resumes", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        file: {
+          filename: file.name,
+          original_filename: file.name,
+          file_size: file.size,
+          file_type: file.type,
+          storage_path: fullPath,
+          is_default,
+        },
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Failed to upload resume");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error(error)
+    throw new Error("Failed to upload resume");
+  }
+
+}
+
+export async function deleteResume(id: string): Promise<void> {
+  const token = await getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch(`/api/resumes?id=${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to delete resume");
+  }
+}
+
+export async function updateResume(id: string, payload: Partial<Resume>): Promise<Resume> {
+  const token = await getAuthToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch(`/api/resumes?id=${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to update resume");
+  }
+
+  return response.json();
 }

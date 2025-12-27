@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, ChevronDown, ChevronUp, Trash2, Pencil } from "lucide-react";
+import { Loader2, Save, ChevronDown, ChevronUp, Trash2, Pencil, Plus } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
 import { Link } from "@tanstack/react-router";
 import type { CoverLetter } from "@/lib/api";
@@ -161,19 +161,25 @@ export default function SavedCoverLetters() {
                 </div>
             )}
 
-            <ContentCard footer="Built for software engineers.">
-                <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl sm:text-3xl font-bold">Saved Cover Letters</h1>
-                    <Link to="/" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-black bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                        + New
-                    </Link>
-                </div>
+            <ContentCard>
+                {coverLetters.length > 0 &&
+                    <div className="flex items-center justify-between mb-6">
+                        <div></div >
+                        <h1 className="text-2xl sm:text-3xl font-bold">Saved Cover Letters</h1>
+                        < Link to="/" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-black bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                            <Plus className="h-4 w-4 mr-1" /> New
+                        </Link>
+                    </div>
+                }
 
                 {coverLetters.length === 0 ? (
                     <div className="p-6 text-center border border-zinc-200 rounded-lg bg-zinc-50">
-                        <p className="text-zinc-600">
+                        <p className="text-zinc-600 mb-3">
                             No saved cover letters yet. Generate and save one to get started!
                         </p>
+                        < Link to="/" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-black bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-black text-white">
+                            <Plus className="h-4 w-4 mr-1" /> New
+                        </Link>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -214,7 +220,7 @@ export default function SavedCoverLetters() {
                         ))}
                     </div>
                 )}
-            </ContentCard>
+            </ContentCard >
 
             <Dialog open={!!selectedLetter} onOpenChange={(open) => !open && handleCloseDialog()}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto pt-10">

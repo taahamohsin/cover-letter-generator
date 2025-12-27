@@ -9,8 +9,8 @@ interface ContentCardProps {
 
 export default function ContentCard({ children, footer, className }: ContentCardProps) {
   return (
-    <div className={`flex justify-center min-h-full px-4 py-6 sm:py-8 md:py-12 bg-black ${className}`}>
-      <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-[880px] bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 my-auto">
+    <div className="flex justify-center min-h-full px-4 py-6 sm:py-8 md:py-12 bg-black">
+      <Card className={`w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-[880px] bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 my-auto ${className}`}>
         <CardContent className="space-y-6 w-full p-0">
           {children}
         </CardContent>

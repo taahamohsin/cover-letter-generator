@@ -1,13 +1,11 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Check, Loader2, Save } from "lucide-react";
-import mammoth from "mammoth";
-import * as pdfjsLib from "pdfjs-dist";
+import { Sparkles, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { classifyGeminiError } from "@/lib/utils";
@@ -15,6 +13,7 @@ import { useCreateCoverLetter } from "@/lib/useCoverLetters";
 import { useAuth } from "@/lib/useAuth";
 import ContentCard from "@/components/ui/content-card";
 import CoverLetterActions from "@/components/ui/cover-letter-actions";
+import ResumeSelector from "@/components/ui/resume-selector";
 import {
     Dialog,
     DialogContent,
@@ -28,11 +27,6 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-// Initialize PDF.js worker
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const PROCESSING_STEPS = {
     'PARSE': 'Parsing resume and matching job requirements...',
@@ -48,9 +42,8 @@ export default function CoverLetterForm() {
     const [step, setStep] = useState<string | null>(null);
 
     const [resumeText, setResumeText] = useState<string>("");
-    const [isParsing, setIsParsing] = useState<boolean>(false);
-    const [fileName, setFileName] = useState("");
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
+    const [resumeFileName, setResumeFileName] = useState<string>("");
 
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [templateName, setTemplateName] = useState("");
@@ -58,49 +51,10 @@ export default function CoverLetterForm() {
 
     const createMutation = useCreateCoverLetter();
 
-    const extractTextFromPDF = async (file: File): Promise<string> => {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-        let fullText = "";
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map((item: any) => item.str).join(" ");
-            fullText += pageText + "\n";
-        }
-        return fullText;
-    };
-
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setFileName(file.name);
-        setIsParsing(true);
-        setStep(PROCESSING_STEPS.PARSE);
-        setResumeText("");
-
-        try {
-            let text = "";
-            if (file.type === "application/pdf") {
-                text = await extractTextFromPDF(file);
-            } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-                const arrayBuffer = await file.arrayBuffer();
-                const result = await mammoth.extractRawText({ arrayBuffer });
-                text = result.value;
-            } else {
-                toast.error("Unsupported file type. Please upload a PDF or DOCX.");
-                setIsParsing(false);
-                return;
-            }
-            setResumeText(text);
-        } catch (error) {
-            toast.error("Failed to read resume file. Please try again.");
-        } finally {
-            setIsParsing(false);
-            setStep(null);
-        }
+    const handleResumeSelected = (text: string, id: string, filename: string) => {
+        setResumeText(text);
+        setSelectedResumeId(id);
+        setResumeFileName(filename);
     };
 
     const generateMutation = useMutation({
@@ -153,10 +107,8 @@ export default function CoverLetterForm() {
         setJobDescription("");
         setCoverLetter("");
         setResumeText("");
-        setFileName("");
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+        setSelectedResumeId(null);
+        setResumeFileName("");
         if (step) setStep(null);
     };
 
@@ -174,12 +126,17 @@ export default function CoverLetterForm() {
             return;
         }
 
+        if (!selectedResumeId) {
+            toast.error("No resume selected");
+            return;
+        }
+
         createMutation.mutate(
             {
                 template_name: templateName.trim(),
                 template_description: templateDescription.trim(),
                 cover_letter_content: coverLetter,
-                resume_text: resumeText,
+                resume_id: selectedResumeId,
             },
             {
                 onSuccess: () => {
@@ -200,32 +157,12 @@ export default function CoverLetterForm() {
     return (
         <ContentCard footer="Built for software engineers.">
             <div className="space-y-6 w-full">
-                <div className="space-y-2">
-                    <Label htmlFor="resume">Resume (PDF or DOCX)</Label>
-                    <div className="flex items-center space-x-2 w-50">
-                        <Input
-                            id="resume"
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".pdf,.docx"
-                            onChange={handleFileUpload}
-                            className="cursor-pointer file:cursor-pointer bg-black text-gray-400 file:text-white"
-                            disabled={isParsing || generateMutation.isPending}
-                        />
-                        {isParsing && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                    </div>
-                    {resumeText && !isParsing && (
-                        <div className="text-xs text-green-600 flex items-center mt-1">
-                            <Check className="h-3 w-3 mr-1" /> Resume parsed successfully ({resumeText.length} chars)
-                        </div>
-                    )}
-                    {fileName && !resumeText && !isParsing && (
-                        <div className="text-xs text-red-500 flex items-center mt-1">
-                            Failed to parse content from {fileName}
-                        </div>
-                    )}
-                </div>
-
+                <ResumeSelector
+                    onResumeSelected={handleResumeSelected}
+                    selectedResumeId={selectedResumeId || undefined}
+                    selectedFileName={resumeFileName}
+                    className="w-75"
+                />
                 <div className="space-y-2">
                     <Label htmlFor="jobTitle">Job Title</Label>
                     <Input
@@ -233,7 +170,7 @@ export default function CoverLetterForm() {
                         placeholder="e.g. Senior Frontend Engineer"
                         value={jobTitle}
                         onChange={(e) => setJobTitle(e.target.value)}
-                        disabled={isParsing || generateMutation.isPending}
+                        disabled={generateMutation.isPending}
                     />
                 </div>
 
@@ -245,15 +182,14 @@ export default function CoverLetterForm() {
                         className="min-h-[120px]"
                         value={jobDescription}
                         onChange={(e) => setJobDescription(e.target.value)}
-                        disabled={isParsing || generateMutation.isPending}
+                        disabled={generateMutation.isPending}
                     />
                 </div>
-
                 <div className="flex justify-center sticky bottom-0 space-x-2 flex-wrap gap-2">
                     <Button
                         className="flex-1 sm:flex-none cursor-pointer min-w-fit h-10"
                         onClick={handleGenerate}
-                        disabled={!jobTitle || !jobDescription || generateMutation.isPending || isParsing || fileName.length === 0}
+                        disabled={!jobTitle || !jobDescription || !resumeText || !selectedResumeId || generateMutation.isPending}
                     >
                         <Sparkles className="mr-2 h-4 w-4" />
                         <span className={step ? "animate-pulse" : ""}>{step ?? "Generate Cover Letter"}</span>

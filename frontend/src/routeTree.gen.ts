@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as ResumesRouteImport } from './routes/resumes'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
@@ -17,6 +18,11 @@ import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResumesRoute = ResumesRouteImport.update({
+  id: '/resumes',
+  path: '/resumes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -38,12 +44,14 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/resumes': typeof ResumesRoute
   '/saved': typeof SavedRoute
   '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/resumes': typeof ResumesRoute
   '/saved': typeof SavedRoute
   '/auth/callback': typeof AuthCallbackRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/resumes': typeof ResumesRoute
   '/saved': typeof SavedRoute
   '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile' | '/saved' | '/auth/callback'
+  fullPaths: '/' | '/profile' | '/resumes' | '/saved' | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile' | '/saved' | '/auth/callback'
-  id: '__root__' | '/' | '/profile' | '/saved' | '/auth/callback'
+  to: '/' | '/profile' | '/resumes' | '/saved' | '/auth/callback'
+  id: '__root__' | '/' | '/profile' | '/resumes' | '/saved' | '/auth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProfileRoute: typeof ProfileRoute
+  ResumesRoute: typeof ResumesRoute
   SavedRoute: typeof SavedRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
 }
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/saved'
       fullPath: '/saved'
       preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resumes': {
+      id: '/resumes'
+      path: '/resumes'
+      fullPath: '/resumes'
+      preLoaderRoute: typeof ResumesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProfileRoute: ProfileRoute,
+  ResumesRoute: ResumesRoute,
   SavedRoute: SavedRoute,
   AuthCallbackRoute: AuthCallbackRoute,
 }
