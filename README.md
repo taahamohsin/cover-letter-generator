@@ -155,6 +155,7 @@ cover-letter-generator/
 - **PDF**: Clean, professional PDF format
 - **DOCX**: Editable Microsoft Word format
 - **Copy to Clipboard**: Quick copy for pasting anywhere
+- **Save as Template**: Save the cover letter as a template for future use (only available when logged in)
 
 ## Contributing
 
@@ -167,6 +168,7 @@ This project is open source and available under the MIT License.
 ## Planned Features
 
 - Support for other models/providers
-- Support for storing and choosing from uploaded resumes
+- Support for a custom prompt
+- Support for bringing your own API key
 
 

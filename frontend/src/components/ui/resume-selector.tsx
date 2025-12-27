@@ -55,7 +55,7 @@ export default function ResumeSelector({
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const { user } = useAuth();
-  const { data: resumesData, isLoading: isLoadingResumes } = useResumes();
+  const { data: resumesData, isLoading: isLoadingResumes } = useResumes(undefined, undefined, !!user);
 
   const resumes = resumesData?.data || [];
   const defaultResume = resumes.find((r) => r.is_default);
@@ -98,7 +98,7 @@ export default function ResumeSelector({
                   Loading resumes...
                 </div>
               ) : resumes.length === 0 ? (
-                <div className="p-4 text-center text-sm text-zinc-500">No saved resumes</div>
+                <div className="p-4 text-center text-sm text-zinc-500">{user ? "No saved resumes" : "Sign in to save resumes"}</div>
               ) : (
                 resumes.map((resume) => (
                   <DropdownMenuItem key={resume.id} onClick={() => handleSelectResume(resume.id)}>
@@ -199,6 +199,7 @@ export default function ResumeSelector({
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
         onUploadSuccess={(resume) => onResumeSelected(resume.resume_text, resume.id, resume.original_filename)}
+        isAuthenticated={!!user}
       />
     </div >
   );

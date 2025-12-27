@@ -388,6 +388,7 @@ export default function SavedResumes() {
             <ResumeUploadDialog
                 open={isUploadDialogOpen}
                 onOpenChange={setIsUploadDialogOpen}
+                isAuthenticated={!!user}
             />
 
             <AlertDialog open={!!deleteConfirmId} onOpenChange={(open: boolean) => !open && setDeleteConfirmId(null)}>

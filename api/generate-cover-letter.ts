@@ -1,14 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { generateCoverLetter } from "./utils.js";
 
-export default async function handler(
+async function handleGenerateCoverLetter(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   const { jobTitle, jobDescription, resumeText } = req.body;
 
   try {
@@ -36,4 +32,15 @@ export default async function handler(
 
     return res.status(500).json({ error: "Failed to generate cover letter" });
   }
+}
+
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  return handleGenerateCoverLetter(req, res);
 }

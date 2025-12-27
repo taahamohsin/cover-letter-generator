@@ -1,51 +1,13 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { createClient } from "@supabase/supabase-js";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import mammoth from "mammoth";
+import { AuthenticatedRequest, createAdminSupabase, withAuth, withOptionalAuth } from "./middleware/auth.js";
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
-}
-
-async function getAuthenticatedUser(req: VercelRequest) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new Error("Missing or invalid authorization header");
-  }
-
-  const token = authHeader.substring(7);
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    }
-  );
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    throw new Error("Invalid authentication token");
-  }
-
-  return { user, supabase };
-}
-
-function createAdminSupabase() {
-  return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
 }
 
 async function extractTextFromPdf(buffer: Buffer): Promise<string> {
@@ -80,69 +42,97 @@ async function extractTextFromDocx(buffer: Buffer): Promise<string> {
 }
 
 
-async function handleUpload(req: VercelRequest, res: VercelResponse) {
+async function handleUpload(req: AuthenticatedRequest, res: VercelResponse) {
   try {
-    const { user, supabase } = await getAuthenticatedUser(req);
+    const { user, supabase } = req;
 
-    const { file, } = JSON.parse(req.body);
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { file } = body;
     const { filename, original_filename, file_size, file_type, storage_path, is_default } = file;
 
-    // Download file from storage to parse text
-    const admin = createAdminSupabase();
-    const { data: fileData, error: downloadError } = await admin.storage
-      .from('resumes')
-      .download(storage_path.split('/').slice(1).join('/')); // Remove bucket name from path if present
+    if (user) {
+      const admin = createAdminSupabase();
+      const { data: fileData, error: downloadError } = await admin.storage
+        .from('resumes')
+        .download(storage_path.split('/').slice(1).join('/')); // Remove bucket name from path if present
 
-    let resume_text = "";
-    if (!downloadError && fileData) {
-      const buffer = Buffer.from(await fileData.arrayBuffer());
+      let resume_text = "";
+      if (!downloadError && fileData) {
+        const buffer = Buffer.from(await fileData.arrayBuffer());
+        const extension = filename.split('.').pop()?.toLowerCase();
+
+        if (extension === 'pdf') {
+          resume_text = await extractTextFromPdf(buffer);
+        } else if (extension === 'docx') {
+          resume_text = await extractTextFromDocx(buffer);
+        }
+      } else if (downloadError) {
+        console.error("Error downloading file for parsing:", downloadError);
+      }
+
+      const { data, error } = await supabase!.from("resumes")
+        .insert({
+          user_id: user!.id,
+          filename,
+          original_filename,
+          file_size,
+          file_type,
+          storage_path,
+          resume_text,
+          is_default,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json(data);
+    }
+    else {
+      const { content } = file;
+      if (!content) {
+        return res.status(400).json({ error: "File content is required for anonymous parsing" });
+      }
+
+      const buffer = Buffer.from(content, 'base64');
       const extension = filename.split('.').pop()?.toLowerCase();
+      let resume_text = "";
 
       if (extension === 'pdf') {
         resume_text = await extractTextFromPdf(buffer);
       } else if (extension === 'docx') {
         resume_text = await extractTextFromDocx(buffer);
       }
-    } else if (downloadError) {
-      console.error("Error downloading file for parsing:", downloadError);
-    }
 
-    const { data, error } = await supabase.from("resumes")
-      .insert({
-        user_id: user.id,
+      return res.json({
+        id: 'anonymous-' + Date.now(),
         filename,
         original_filename,
         file_size,
         file_type,
-        storage_path,
         resume_text,
-        is_default,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      return res.status(500).json({ error: error.message });
+        is_default: false,
+      });
     }
-
-    return res.json(data);
   } catch (error: any) {
     console.error("Upload handler error:", error);
-    return res.status(error.message.includes("authorization") ? 401 : 500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
 
-async function handleGet(req: VercelRequest, res: VercelResponse) {
+async function handleGet(req: AuthenticatedRequest, res: VercelResponse) {
   try {
-    const { user, supabase } = await getAuthenticatedUser(req);
+    const { user, supabase } = req;
     const { id, limit = "10", offset = "0" } = req.query;
 
     if (id) {
-      const { data: resume, error } = await supabase
+      const { data: resume, error } = await supabase!
         .from("resumes")
         .select("*")
         .eq("id", id)
-        .eq("user_id", user.id)
+        .eq("user_id", user!.id)
         .single();
 
       if (error || !resume) {
@@ -168,10 +158,10 @@ async function handleGet(req: VercelRequest, res: VercelResponse) {
         download_url: signedUrlData?.signedUrl || null,
       });
     } else {
-      const { data: resumes, error, count } = await supabase
+      const { data: resumes, error, count } = await supabase!
         .from("resumes")
         .select("*", { count: "exact" })
-        .eq("user_id", user.id)
+        .eq("user_id", user!.id)
         .order("is_default", { ascending: false })
         .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
 
@@ -183,37 +173,37 @@ async function handleGet(req: VercelRequest, res: VercelResponse) {
     }
   } catch (error: any) {
     console.error("Get error:", error);
-    return res.status(error.message.includes("authorization") ? 401 : 500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
 
-async function handleDelete(req: VercelRequest, res: VercelResponse) {
+async function handleDelete(req: AuthenticatedRequest, res: VercelResponse) {
   try {
-    const { user, supabase } = await getAuthenticatedUser(req);
+    const { user, supabase } = req;
     const { id } = req.query;
 
     if (!id) {
       return res.status(400).json({ error: "Resume ID is required" });
     }
 
-    const { data: resume, error: fetchError } = await supabase
+    const { data: resume, error: fetchError } = await supabase!
       .from("resumes")
       .select("storage_path")
       .eq("id", id)
-      .eq("user_id", user.id)
+      .eq("user_id", user!.id)
       .single();
 
     if (fetchError || !resume) {
       return res.status(404).json({ error: "Resume not found" });
     }
 
-    const { error: storageError } = await supabase.storage.from("resumes").remove([resume.storage_path]);
+    const { error: storageError } = await supabase!.storage.from("resumes").remove([resume.storage_path]);
 
     if (storageError) {
       console.error("Storage delete error:", storageError);
     }
 
-    const { error: deleteError } = await supabase.from("resumes").delete().eq("id", id).eq("user_id", user.id);
+    const { error: deleteError } = await supabase!.from("resumes").delete().eq("id", id).eq("user_id", user!.id);
 
     if (deleteError) {
       return res.status(500).json({ error: "Failed to delete resume" });
@@ -222,13 +212,13 @@ async function handleDelete(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true });
   } catch (error: any) {
     console.error("Delete error:", error);
-    return res.status(error.message.includes("authorization") ? 401 : 500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
 
-async function handleUpdate(req: VercelRequest, res: VercelResponse) {
+async function handleUpdate(req: AuthenticatedRequest, res: VercelResponse) {
   try {
-    const { user, supabase } = await getAuthenticatedUser(req);
+    const { user, supabase } = req;
     const { id } = req.query;
     const { is_default, resume_text } = req.body;
 
@@ -249,13 +239,13 @@ async function handleUpdate(req: VercelRequest, res: VercelResponse) {
     }
 
     if (is_default === true) {
-      await supabase.from("resumes").update({ is_default: false }).eq("user_id", user.id).eq("is_default", true);
+      await supabase!.from("resumes").update({ is_default: false }).eq("user_id", user!.id).eq("is_default", true);
     }
-    const { data: resume, error } = await supabase
+    const { data: resume, error } = await supabase!
       .from("resumes")
       .update(updateData)
       .eq("id", id)
-      .eq("user_id", user.id)
+      .eq("user_id", user!.id)
       .select()
       .single();
 
@@ -266,7 +256,7 @@ async function handleUpdate(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(resume);
   } catch (error: any) {
     console.error("Update error:", error);
-    return res.status(error.message.includes("authorization") ? 401 : 500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
 
@@ -279,24 +269,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-
-
-  try {
-    switch (req.method) {
-      case "POST":
-        return await handleUpload(req, res);
-      case "GET":
-        return await handleGet(req, res);
-      case "DELETE":
-        return await handleDelete(req, res);
-      case "PATCH":
-        return await handleUpdate(req, res);
-      default:
-
-        return res.status(405).json({ error: "Method not allowed" });
-    }
-  } catch (error: any) {
-    console.error("Handler error:", error);
-    return res.status(500).json({ error: error.message || "Internal server error" });
+  switch (req.method) {
+    case "POST":
+      return withOptionalAuth(handleUpload)(req, res);
+    case "GET":
+      return withAuth(handleGet)(req, res);
+    case "DELETE":
+      return withAuth(handleDelete)(req, res);
+    case "PATCH":
+      return withAuth(handleUpdate)(req, res);
+    default:
+      return res.status(405).json({ error: "Method not allowed" });
   }
 }

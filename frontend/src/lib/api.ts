@@ -187,7 +187,43 @@ export async function uploadResume(
   file: File, is_default = false
 ): Promise<Resume> {
   const token = await getAuthToken();
-  if (!token) throw new Error("Not authenticated");
+
+  // If not authenticated, send the file content directly for parsing
+  if (!token) {
+    const base64Content = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]); // Remove data:application/pdf;base64,
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const response = await fetch("/api/resumes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        file: {
+          filename: file.name,
+          original_filename: file.name,
+          file_size: file.size,
+          file_type: file.type,
+          content: base64Content,
+          is_default: false,
+        },
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Failed to parse resume");
+    }
+
+    return response.json();
+  }
 
   try {
     const { path, token: uploadToken } = await getUploadUrl(file.name);
@@ -229,7 +265,6 @@ export async function uploadResume(
     console.error(error)
     throw new Error("Failed to upload resume");
   }
-
 }
 
 export async function deleteResume(id: string): Promise<void> {

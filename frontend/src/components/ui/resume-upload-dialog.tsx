@@ -11,12 +11,14 @@ interface ResumeUploadDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onUploadSuccess?: (resume: Resume) => void;
+    isAuthenticated: boolean;
 }
 
 export function ResumeUploadDialog({
     open,
     onOpenChange,
     onUploadSuccess,
+    isAuthenticated,
 }: ResumeUploadDialogProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [setAsDefault, setSetAsDefault] = useState(false);
@@ -93,21 +95,23 @@ export function ResumeUploadDialog({
                         />
 
                     </div>
+                    {isAuthenticated &&
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="set-default"
+                                checked={setAsDefault}
+                                disabled={resumes.length === 0}
+                                onChange={(e) => setSetAsDefault(e.target.checked)}
+                                className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:opacity-50"
+                            />
 
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            id="set-default"
-                            checked={setAsDefault}
-                            disabled={resumes.length === 0}
-                            onChange={(e) => setSetAsDefault(e.target.checked)}
-                            className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:opacity-50"
-                        />
-                        <Label htmlFor="set-default" className="text-sm font-normal cursor-pointer">
-                            Set as default resume
-                        </Label>
-                    </div>
+                            <Label htmlFor="set-default" className="text-sm font-normal cursor-pointer">
+                                Set as default resume
+                            </Label>
 
+                        </div>
+                    }
                     <div className="flex gap-2 justify-end">
                         <Button
                             variant="outline"

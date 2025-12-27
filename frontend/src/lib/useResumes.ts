@@ -3,10 +3,11 @@ import { listResumes, deleteResume, updateResume, uploadResume, getResume } from
 import { toast } from "sonner";
 import type { Resume } from "./api";
 
-export function useResumes(limit = 100, offset = 0) {
+export function useResumes(limit = 100, offset = 0, enabled = false) {
   return useQuery({
     queryKey: ["resumes", limit, offset],
     queryFn: () => listResumes(limit, offset),
+    enabled,
   });
 }
 
@@ -14,7 +15,7 @@ export function useResume(id: string | null) {
   return useQuery({
     queryKey: ["resume", id],
     queryFn: () => (id ? getResume(id) : null),
-    enabled: !!id,
+    enabled: !!id
   });
 }
 
