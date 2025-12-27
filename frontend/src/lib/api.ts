@@ -188,13 +188,12 @@ export async function uploadResume(
 ): Promise<Resume> {
   const token = await getAuthToken();
 
-  // If not authenticated, send the file content directly for parsing
   if (!token) {
     const base64Content = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        resolve(result.split(',')[1]); // Remove data:application/pdf;base64,
+        resolve(result.split(',')[1]);
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);

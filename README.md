@@ -56,6 +56,7 @@ Create a `.env` file in the `api` directory:
 
 ```env
 SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 GEMINI_API_KEY=your_gemini_api_key
 ```
@@ -78,7 +79,7 @@ yarn install
 
 3. Install API dependencies:
 ```bash
-cd ../api
+cd api
 yarn install
 ```
 
@@ -94,7 +95,7 @@ cd frontend
 yarn dev
 ```
 
-2. For local API testing with Vercel CLI:
+2. For local API testing with Vercel CLI, from the root directory run:
 ```bash
 vercel dev
 ```

@@ -155,7 +155,7 @@ export default function CoverLetterForm() {
     };
 
     return (
-        <ContentCard footer="Built for software engineers.">
+        <ContentCard>
             <div className="space-y-6 w-full">
                 <ResumeSelector
                     onResumeSelected={handleResumeSelected}

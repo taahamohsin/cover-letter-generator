@@ -31,7 +31,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function SavedResumes() {
     const { user, loading: authLoading } = useAuth();
-    const { data, isLoading, isFetching, error } = useResumes();
+    const { data, isLoading, isFetching, error } = useResumes(undefined, undefined, true);
     const deleteMutation = useDeleteResume();
     const updateMutation = useUpdateResume();
 
@@ -209,7 +209,6 @@ export default function SavedResumes() {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
-
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -219,30 +218,30 @@ export default function SavedResumes() {
                 )}
             </ContentCard >
 
-            {/* Resume Details Dialog */}
             <Dialog open={!!selectedResumeId} onOpenChange={(open) => !open && handleCloseDialog()}>
-                <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto pt-10">
+                <DialogContent className="w-[94vw] sm:w-full max-w-4xl max-h-[90vh] overflow-y-auto pt-10 sm:pt-6 overflow-x-hidden">
                     {!fullResume && isLoadingFullResume ? (
                         <div className="h-64 flex items-center justify-center">
                             <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
                         </div>
                     ) : fullResume ? (
                         <>
-                            <DialogHeader>
-                                <div className="flex items-center justify-between gap-4">
-                                    <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                                        <FileText className="h-5 w-5" />
-                                        {fullResume.original_filename}
-                                    </DialogTitle>
-                                    <div className="flex items-center gap-2">
+                            <DialogHeader className="w-full min-w-0 px-0">
+                                <div className="flex items-center justify-between gap-4 w-full min-w-0 pt-4">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                        <FileText className="h-5 w-5 flex-shrink-0 text-zinc-500" />
+                                        <DialogTitle className="text-xl font-bold truncate min-w-0 block">
+                                            {fullResume.original_filename}
+                                        </DialogTitle>
+                                    </div>
+                                    <div className="flex items-center flex-shrink-0 sm:pr-0">
                                         {fullResume.download_url && (
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => window.open(fullResume.download_url, '_blank')}
                                             >
                                                 <Download className="mr-2 h-4 w-4" />
-                                                Download
                                             </Button>
                                         )}
                                         <Button
@@ -257,8 +256,8 @@ export default function SavedResumes() {
                                 </div>
                             </DialogHeader>
 
-                            <div className="mt-6 space-y-6">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm pb-4 border-b border-zinc-100">
+                            <div className="mt-6 space-y-6 w-full min-w-0">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm pb-4 border-b border-zinc-100 w-full min-w-0">
                                     <div>
                                         <p className="text-zinc-500">File Type</p>
                                         <p className="font-medium">{fullResume.file_type.split('/').pop()?.toUpperCase() || 'Unknown'}</p>
@@ -283,13 +282,13 @@ export default function SavedResumes() {
                                         <TabsTrigger value="text" className="text-xs">Extracted Text</TabsTrigger>
                                     </TabsList>
 
-                                    <TabsContent value="preview" className="mt-4">
-                                        <div className="border border-zinc-200 rounded-md bg-zinc-100 overflow-hidden h-[600px] flex items-center justify-center relative shadow-inner">
+                                    <TabsContent value="preview" className="mt-4 w-full">
+                                        <div className="border border-zinc-200 rounded-md bg-zinc-100 overflow-hidden h-[500px] sm:h-[600px] w-full flex items-center justify-center relative shadow-inner">
                                             {fullResume.download_url ? (
                                                 fullResume.file_type === 'application/pdf' ? (
                                                     <iframe
                                                         src={`${fullResume.download_url}#toolbar=0`}
-                                                        className="w-full h-full border-0"
+                                                        className="w-full h-full border-0 absolute inset-0"
                                                         title="Resume Preview"
                                                     />
                                                 ) : (
@@ -383,7 +382,7 @@ export default function SavedResumes() {
                         </>
                     ) : null}
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             <ResumeUploadDialog
                 open={isUploadDialogOpen}

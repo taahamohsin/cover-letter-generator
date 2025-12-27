@@ -68,7 +68,6 @@ export function ResumeUploadDialog({
 
             onOpenChange(false);
             setSelectedFile(null);
-            // Only reset setAsDefault if there are other resumes
             if (resumes.length > 0) {
                 setSetAsDefault(false);
             }
@@ -79,11 +78,11 @@ export function ResumeUploadDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md overflow-hidden">
                 <DialogHeader>
                     <DialogTitle>Upload Resume</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 mt-4">
+                <div className="space-y-4 mt-4 max-w-full overflow-x-hidden">
                     <div>
                         <Label htmlFor="resume-file">Select File (PDF or DOCX)</Label>
                         <input
