@@ -76,7 +76,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="space-y-4 border-t border-zinc-800 pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex items-center justify-between">
                 <div>
                   <label className="text-xs font-medium uppercase tracking-wider">
                     Provider
