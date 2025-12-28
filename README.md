@@ -141,9 +141,10 @@ cover-letter-generator/
 - Analyzes job requirements
 - Generates a professional cover letter that:
   - Matches your experience to job requirements
-  - Uses proper business letter format
+  - Uses proper formatting
   - Includes appropriate salutation and closing
   - Avoids markdown formatting for clean exports
+  - Is concise and to the point
 
 ### Template Management
 - Save generated cover letters as templates
