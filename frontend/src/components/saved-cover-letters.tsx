@@ -197,7 +197,7 @@ export default function SavedCoverLetters() {
                                                     {letter.template_name}
                                                 </CardTitle>
                                                 <Button
-                                                    variant="outline"
+                                                    variant="ghost"
                                                     size="icon"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
