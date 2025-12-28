@@ -8,10 +8,11 @@
     "busboy": "^1.6.0",
     "express": "5.1.0",
     "mammoth": "^1.11.0",
-    "pdfjs-dist": "^4.0.0"
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.4",
+    "@types/pdf-parse": "^1.1.4",
     "@types/express": "5.0.0",
     "@types/node": "20.11.17",
     "typescript": "5.8.3",

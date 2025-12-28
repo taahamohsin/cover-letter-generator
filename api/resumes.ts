@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import pdf from "pdf-parse";
 import mammoth from "mammoth";
 import { AuthenticatedRequest, createAdminSupabase, withAuth, withOptionalAuth } from "./middleware/auth.js";
 
@@ -12,19 +12,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   try {
-    const data = new Uint8Array(buffer);
-    const loadingTask = pdfjsLib.getDocument({ data });
-    const pdf = await loadingTask.promise;
-    let fullText = "";
-
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map((item: any) => item.str).join(" ");
-      fullText += pageText + "\n";
-    }
-
-    return fullText;
+    const data = await pdf(buffer);
+    return data.text;
   } catch (error) {
     console.error("Error extracting text from PDF:", error);
     return "";

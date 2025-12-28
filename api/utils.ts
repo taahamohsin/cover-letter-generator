@@ -17,7 +17,7 @@ export async function generateCoverLetter(jobTitle: string, jobDescription: stri
       - Do NOT use asterisks, bolding, italics, bullet points, \n, or headings.
       - Do NOT apply special typography, spacing, or stylistic formatting.
       - Write as a normal professional cover letter suitable for PDF or email.
-      - Do not use generic phrases like "I am writing to express my interest in" or "as advertised.". Sound like you are a human.
+      - Do not use generic phrases like "as advertised.". Sound like you are a human.
 
       EXPERIENCE SELECTION RULES:
       When selecting experiences from the resume:
