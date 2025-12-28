@@ -190,7 +190,7 @@ export default function CoverLetterForm() {
                     <Button
                         className="flex-1 sm:flex-none cursor-pointer min-w-fit h-10"
                         onClick={handleGenerate}
-                        disabled={!jobTitle || !jobDescription || !resumeText || !selectedResumeId || generateMutation.isPending}
+                        disabled={!jobTitle || !jobDescription || !selectedResumeId || generateMutation.isPending}
                     >
                         <Sparkles className="mr-2 h-4 w-4" />
                         <span className={step ? "animate-pulse" : ""}>{step ?? "Generate Cover Letter"}</span>
