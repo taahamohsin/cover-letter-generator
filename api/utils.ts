@@ -5,87 +5,56 @@ export async function generateCoverLetter(jobTitle: string, jobDescription: stri
 
   const result = await ai.models.generateContent({
     model: "gemma-3-12b-it",
-    contents: `You are a ${jobTitle} writing a tailored cover letter.
-      Your task is to:
-      1. Extract relevant technical signals from the resume text provided.
-      2. Align those signals with the ${jobTitle} role and the job description.
-      3. Write a concise, technically grounded cover letter.
+    contents: `Write a cover letter for a ${jobTitle} position. Use ONLY plain text - no markdown, asterisks, bullets, or formatting.
 
-      CRITICAL OUTPUT REQUIREMENTS:
-      - Output MUST be plain text only.
-      - Do NOT use Markdown.
-      - Do NOT use asterisks, bolding, italics, bullet points, \n, or headings.
-      - Do NOT apply special typography, spacing, or stylistic formatting.
-      - Write as a normal professional cover letter suitable for PDF or email.
-      - Do not use generic phrases like "as advertised.". Sound like you are a human.
+FORMAT (follow exactly):
+Hiring Manager
+[Company name only if in job description, else skip this line]
+[City, State only if in job description, else skip this line]
+${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
 
-      EXPERIENCE SELECTION RULES:
-      When selecting experiences from the resume:
-        - Do NOT ignore earlier experience solely due to recency if it demonstrates seniority or system design depth.
-        - Talk about ALL the roles in the resume in ways that relate to the job.
-        - Order paragraphs by strength of relevance to the role’s core technical risks, not by chronology.
-        - Prefer roles with longer tenure and broader scope over short-term roles.
-        - Prefer roles involving large-scale systems, regulated domains, or production infrastructure.
-        - If multiple roles are relevant, include at least one example from a longer-tenured or higher-impact role.
-        - Each referenced employer must contribute a different type of signal (e.g., scale, frontend, backend, infrastructure).
+Dear Hiring Manager,
 
-      MANDATORY COVERAGE RULE:
-      - If the resume includes experience in a regulated, high-stakes, or compliance-sensitive domain (e.g., healthcare, finance, government), that experience MUST be explicitly referenced in the body.
-      - This experience must be described separately from startup or SaaS experience and tied to reliability, data integrity, or security constraints.
-      - Do NOT collapse all experience into a single role if multiple materially different environments exist.
+[Body paragraphs - see rules below]
 
-      OPENING SENTENCE REQUIREMENT:
-      - The first sentence must NOT reference the candidate’s interest, alignment, or enthusiasm.
-      - The first concrete experience example must appear in the first paragraph immediately after the opening sentence.
+Sincerely,
+[Full name]
 
-      PARAGRAPH CONSTRUCTION RULE:
-      - Each body paragraph must begin with its strongest, most concrete claim or outcome.
-      - Context, tools, and explanation may follow, but no paragraph may open with general alignment or descriptive filler.
+BODY PARAGRAPH RULES:
+1. First paragraph: Open with 1-2 sentences expressing genuine interest in the role and company, then transition naturally into your most relevant technical background. Be warm but professional.
+2. Middle paragraphs (2-3): Each focuses on one employer and one core problem solved, ordered by relevance to job
+3. Write in active voice about what you built, not what the role "involved" or "required"
+4. Cover ALL roles from resume that relate to the job
+5. Show different work contexts (enterprise/startup, regulated/fast-paced, scale differences)
+6. Each paragraph leads with impact, then explains technical approach
+7. Final paragraph: Express interest in discussing the role further and thank them for their consideration
 
-      CLOSING PARAGRAPH REQUIREMENT:
-      - The final paragraph must reinforce why the candidate’s experience would be valuable to discuss further.
-      - Do NOT use enthusiasm, confidence, or motivation language.
-      - The closing must frame the interview as an opportunity to explore concrete experience, not personal interest.
+AVOID THESE PHRASES:
+- "This involved", "This required", "This demonstrated", "This experience provided"
+- "My experience at X focused on" - just state what you did
+- Long tech stack lists - weave in 2-3 relevant technologies per paragraph naturally
+- Generic enthusiasm like "as advertised" or overly formal language
 
-      LOSS-AVERSION FRAMING:
-      - Write each paragraph as if answering: “What would the team miss out on by not interviewing this candidate?”
+OPENING STYLE:
+- Express genuine interest in the role/company first
+- Transition naturally to relevant background: "With [X years/background], I've..."
+- Should feel conversational and warm, not transactional
 
+WRITING STYLE:
+- Write like you're explaining your work to a peer, not selling yourself
+- Lead each paragraph with impact, then how you achieved it
+- 250-300 words total
+- Each role shows different capability relevant to the job
+- Never invent details not in resume
+- Never use placeholders or brackets in output
 
-      The cover letter MUST include the following sections in this exact order:
-      1. Header block (top-left, plain text, no styling):
-        - Hiring Manager or Hiring Team (use "Hiring Manager" if unknown)
-        - Company name: ONLY include if explicitly stated in the job description. If not found, SKIP this line entirely. NEVER write "Company name", "[Company Name]", or any placeholder.
-        - Company location: ONLY include if city/state are explicitly stated in the job description. If not found, SKIP this line entirely. NEVER write "Company location", "[City, State]", or any placeholder.
-        - Today's date ${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })} in MM/DD/YYYY format
+Resume:
+${resumeText}
 
-      2. Salutation line:
-        - "Dear Hiring Manager," or "Dear <Title> Hiring Team,"
+Job description:
+${jobDescription}
 
-      3. Body paragraphs:
-        - 2–4 paragraphs forming the main cover letter body
-        - The cover letter MUST end with a brief, professional call-to-action inviting the hiring manager to continue the conversation or schedule an interview.
-
-      4. Closing line:
-        - "Sincerely," or "Best regards,"
-
-      5. Signature:
-        - Candidate full name on its own line in Sentence Case with no blank line between the closing line and the name
-
-      Content constraints:
-      - Length: 250–300 words
-      - Tone: confident, professional, technical
-      - Avoid generic enthusiasm or filler language
-      - Reference specific technologies, systems, or projects from the resume
-      - Explicitly connect past experience to the job’s responsibilities
-      - Do NOT invent experience not supported by the resume
-      - If company name or location is not provided, omit those lines cleanly.
-      - Do not insert placeholders or brackets.
-      Resume:
-      ${resumeText}
-
-      Job description:
-      ${jobDescription}
-    `
+Output the complete cover letter now:`
   });
   return result.text;
 }
