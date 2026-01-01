@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, ChevronDown, ChevronUp, Trash2, Pencil, Plus } from "lucide-react";
-import { useAuth } from "@/lib/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Link } from "@tanstack/react-router";
 import type { CoverLetter } from "@/lib/api";
 import ContentCard from "@/components/ui/content-card";
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function SavedCoverLetters() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading } = useAuthContext();
     const { data, isLoading, isFetching, error } = useCoverLetters();
     const updateMutation = useUpdateCoverLetter();
     const deleteMutation = useDeleteCoverLetter();
@@ -50,16 +50,7 @@ export default function SavedCoverLetters() {
         );
     }
 
-    if (!user) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-full gap-4 bg-black text-white">
-                <p className="text-lg">Please sign in to view saved cover letters</p>
-                <Link to="/" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                    Go to Home
-                </Link>
-            </div>
-        );
-    }
+    if (!user) return null;
 
     if (error) {
         return (

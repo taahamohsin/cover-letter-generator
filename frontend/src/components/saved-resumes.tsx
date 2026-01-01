@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Trash2, FileText, Upload, Download, Pencil, Save, X } from "lucide-react";
-import { useAuth } from "@/lib/useAuth";
-import { Link } from "@tanstack/react-router";
+import { useAuthContext } from "@/contexts/AuthContext";
 import type { Resume } from "@/lib/api";
 import ContentCard from "@/components/ui/content-card";
 import {
@@ -31,7 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import TruncatedTooltip from "./ui/truncated-tooltip";
 
 export default function SavedResumes() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading } = useAuthContext();
     const { data, isLoading, isFetching, error } = useResumes(undefined, undefined, true);
     const existingFileNames = useMemo(() => new Set(data?.data.map((r) => r.filename)), [data]);
     const deleteMutation = useDeleteResume();
@@ -55,16 +54,7 @@ export default function SavedResumes() {
         );
     }
 
-    if (!user) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-full gap-4 bg-black text-white">
-                <p className="text-lg">Please sign in to view saved resumes</p>
-                <Link to="/" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                    Go to Home
-                </Link>
-            </div>
-        );
-    }
+    if (!user) return null;
 
     if (error) {
         return (

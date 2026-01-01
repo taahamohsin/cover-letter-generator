@@ -1,4 +1,4 @@
-import { useAuth } from "@/lib/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { logout } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { IconLogout } from "@tabler/icons-react";
@@ -12,7 +12,7 @@ import logo from "../../assets/logo.svg";
 import { useState } from "react";
 
 export default function Navbar() {
-    const { user, loading } = useAuth();
+    const { user, loading } = useAuthContext();
     const [isSigningIn, setIsSigningIn] = useState<boolean>(false);
 
     const getAvatarUrl = () => {

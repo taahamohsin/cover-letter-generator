@@ -1,12 +1,10 @@
-import { useAuth } from "@/lib/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthContext();
 
   if (loading) {
     return (
@@ -16,16 +14,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-full gap-4 bg-black text-white">
-        <p className="text-lg">Please sign in to view your profile</p>
-        <Button asChild>
-          <Link to="/">Go to Home</Link>
-        </Button>
-      </div>
-    );
-  }
+  if (!user) return null;
 
   const getAvatarUrl = () => {
     if (user?.user_metadata?.avatar_url) {

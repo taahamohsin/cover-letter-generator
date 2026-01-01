@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Label } from "@/components/ui/label";
 import { FileText, Upload, ChevronDown, Check, Loader2 } from "lucide-react";
 import { useResumes } from "@/lib/useResumes";
-import { useAuth } from "@/lib/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { ResumeUploadDialog } from "./resume-upload-dialog";
 import TruncatedTooltip from "./truncated-tooltip";
 
@@ -27,7 +27,7 @@ export default function ResumeSelector({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuthContext();
   const { data: resumesData, isLoading: isLoadingResumes } = useResumes(undefined, undefined, !!user);
 
   const resumes = resumesData?.data || [];

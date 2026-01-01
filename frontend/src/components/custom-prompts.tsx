@@ -8,11 +8,11 @@ import { useCustomPrompts, useCreateCustomPrompt, useUpdateCustomPrompt, useDele
 import { toast } from "sonner";
 import type { CustomPrompt } from "@/lib/api";
 import { PromptList } from "./ui/prompt-list";
-import { useAuth } from "@/lib/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function CustomPromptsPage() {
-    const { user } = useAuth();
+    const { user } = useAuthContext();
     const isAuthenticated = !!user;
 
     const [view, setView] = useState<"list" | "form" | "read">("list");

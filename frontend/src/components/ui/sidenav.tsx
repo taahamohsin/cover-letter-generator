@@ -7,13 +7,13 @@ import {
   SheetFooter,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useAuth } from "@/lib/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Link } from "@tanstack/react-router";
 import { IconLogout } from "@tabler/icons-react";
 import { logout } from "@/lib/auth";
 
 export default function Sidenav() {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [open, setOpen] = useState(false);
 
   if (!user) return null;

@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { generateCoverLetter as apiGenerateCoverLetter } from "@/lib/api";
 import type { CustomPrompt } from "@/lib/api";
 import { useCreateCoverLetter } from "@/lib/useCoverLetters";
-import { useAuth } from "@/lib/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useSystemDefaultPrompt } from "@/lib/useCustomPrompts";
 import ContentCard from "@/components/ui/content-card";
 import CoverLetterActions from "@/components/ui/cover-letter-actions";
 import ResumeSelector from "@/components/ui/resume-selector";
@@ -37,7 +38,7 @@ const PROCESSING_STEPS = {
 };
 
 export default function CoverLetterForm() {
-    const { user } = useAuth();
+    const { user } = useAuthContext();
     const [jobTitle, setJobTitle] = useState<string>("");
     const [jobDescription, setJobDescription] = useState<string>("");
     const [coverLetter, setCoverLetter] = useState<string>("");
@@ -55,6 +56,14 @@ export default function CoverLetterForm() {
     const [selectedPrompt, setSelectedPrompt] = useState<CustomPrompt | null>(null);
 
     const createMutation = useCreateCoverLetter();
+    const { data: systemDefaultPrompt } = useSystemDefaultPrompt();
+
+    // Set initial default prompt when system default loads
+    useEffect(() => {
+        if (systemDefaultPrompt && !selectedPrompt) {
+            setSelectedPrompt(systemDefaultPrompt);
+        }
+    }, [systemDefaultPrompt, selectedPrompt]);
 
     const handleResumeSelected = (text: string, id: string, filename: string) => {
         setResumeText(text);
@@ -192,7 +201,12 @@ export default function CoverLetterForm() {
                             <MessageSquareText className="h-4 w-4 shrink-0 text-slate-500 group-hover:text-slate-700" />
                             <div className="flex flex-col items-start text-xs text-left overflow-hidden">
                                 <span className="font-medium text-zinc-800 text-sm truncate max-w-[120px]">
-                                    {selectedPrompt?.name || "System Default"}
+                                    {selectedPrompt?.name || (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            Loading...
+                                        </div>
+                                    )}
                                 </span>
                             </div>
                         </div>
@@ -336,7 +350,6 @@ export default function CoverLetterForm() {
                     setPromptOverride(p.prompt_text);
                     setSelectedPrompt(p);
                     setShowCustomPromptDialog(false);
-                    toast.success(`Selected prompt: ${p.name}`);
                 }}
                 isAuthenticated={!!user}
             />
